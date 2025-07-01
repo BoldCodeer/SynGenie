@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import torch
+import os
 
 from src.data_loader import load_data
 from utils.visualizations import visualize_data
@@ -22,11 +23,28 @@ def main():
         1. **Upload** a `.csv` file with your real tabular data.
         2. SynGenie **analyzes and encodes** your data, including categorical columns.
         3. It **trains a GAN model** to learn the distribution and patterns.
-        4. Once trained, it **generates synthetic data** that mirrors the structure and characteristics of your input — but without revealing the real values.
+        4. Once trained, it **generates synthetic data** that mirrors your input — but without revealing actual values.
 
-        **No data leaves your machine**. Everything runs securely in your browser.
+        **No data leaves your machine**. Everything runs locally and securely.
         """)
 
+    # 📥 Download Sample CSV
+    st.sidebar.subheader("📁 Sample Data")
+    sample_path = "sample/mock_data.csv"
+    if os.path.exists(sample_path):
+        with open(sample_path, "rb") as f:
+            sample_bytes = f.read()
+
+        st.sidebar.download_button(
+            label="⬇️ Download mock_data.csv",
+            data=sample_bytes,
+            file_name="mock_data.csv",
+            mime="text/csv"
+        )
+    else:
+        st.sidebar.warning("Sample file not found.")
+
+    # File Uploader
     uploaded_file = st.file_uploader("📂 Upload `mock_data.csv`", type=["csv"])
 
     if uploaded_file:
@@ -41,7 +59,6 @@ def main():
             st.subheader("📊 Preview of Uploaded Data")
             st.dataframe(df.head())
 
-            # Load and encode real data
             uploaded_file.seek(0)
             real_data, label_encoders = load_data(uploaded_file)
             st.session_state["real_data"] = real_data
@@ -58,7 +75,7 @@ def main():
                 st.subheader("🛠️ Training GAN...")
                 progress_bar = st.progress(0, text="Starting training...")
 
-                # Training GAN
+                # Manual GAN training loop
                 num_epochs = 200
                 batch_size = 32
                 learning_rate = 0.0002
@@ -107,7 +124,6 @@ def main():
                     noise_dim=noise_dim,
                     column_names=real_data.columns.tolist()
                 )
-
                 synthetic_df = decode_synthetic_data(synthetic_df, label_encoders)
 
                 st.subheader("🧬 Synthetic Data Preview")
@@ -116,8 +132,8 @@ def main():
                 csv = synthetic_df.to_csv(index=False).encode('utf-8')
                 st.download_button("📥 Download Synthetic CSV", csv, file_name="synthetic_output.csv", mime='text/csv')
 
-                st.markdown("---")
-                if st.button("🔄 Reset Training"):
+                # 🔄 Reset
+                if st.button("🔁 Reset"):
                     st.session_state.clear()
                     st.experimental_rerun()
 
