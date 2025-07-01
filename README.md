@@ -2,6 +2,8 @@
 
 SynGenie is a web-based tool built with **Streamlit** and **PyTorch** that uses **Generative Adversarial Networks (GANs)** to generate realistic synthetic tabular data based on your real CSV dataset. This is useful for data privacy, testing, and simulation purposes.
 
+https://syngenie.streamlit.app/
+
 ---
 
 ## 🚀 Features
